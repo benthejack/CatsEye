@@ -27,6 +27,8 @@ class TileGrid{
   protected PVector cellSize;
   protected PVector renderSize, previewSize;
   
+  protected boolean useMask;
+  
   protected String renderMode;
   
   
@@ -37,6 +39,8 @@ class TileGrid{
     
     //default settings
     renderSize = new PVector(width, height);
+    previewSize = new PVector(width, height);
+
     cellRadius = 100;
     previewImage = createGraphics(100,100);
     ((PGraphics)previewImage).beginDraw();
@@ -60,23 +64,35 @@ class TileGrid{
   
   public void setCellRadius(float i_cellRad){
     cellRadius = i_cellRad;
+    gridGenerated = false;
   }
   
   public void setRenderSize(PVector i_size){
-    renderSize = i_size;
+    renderSize = i_size.get();
+    gridGenerated = false;
   }
   
-  public void setMissingOdds(int i_odds){
+  public void setMissingOdds(float i_odds){
     missingOdds = i_odds;
   }
   
   public void saveImage(String i_path){
+    saveImage(i_path, ".png");
+  }
+  
+  public void saveImage(String i_path, String i_fileSuffix){
     
     if(!generated){
       generate();
     }
     
-    renderContext.save(i_path);
+    renderContext.save(i_path+i_fileSuffix);
+  }
+  
+  
+  
+  public void useMask(boolean i_useMask){
+      useMask = i_useMask;
   }
   
   
@@ -95,12 +111,9 @@ class TileGrid{
   
   void setPreviewSize(PVector i_size){
     previewSize = i_size;
-    previewImage = renderContext.get();
-    previewImage.resize((int)i_size.x, (int)i_size.y);
   }
   
-  public PImage getPreviewImage(){
-
+  public PImage getPreviewImage(){  
     return previewImage;
   }
   
@@ -186,7 +199,7 @@ class TileGrid{
       generated = true;
       
       previewImage = renderContext.get();
-      previewImage.resize((int)renderSize.x, (int)renderSize.y);
+      previewImage.resize(renderContext.width >= renderContext.height ? (int)previewSize.x : 0, renderContext.height > renderContext.width ? (int)previewSize.y : 0);
     }
     
   }
@@ -196,7 +209,7 @@ class TileGrid{
   ***/
   protected boolean isMaskedAt(float i_x, float i_y){
     
-    if(maskImage == null)
+    if(!useMask || maskImage == null)
       return false;
     
     try {

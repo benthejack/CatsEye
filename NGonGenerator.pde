@@ -52,6 +52,12 @@ class NGonGenerator{
      for(int i = 0; i < sides*2; ++i){
        renderContext.pushMatrix();
        renderContext.translate(i_x,i_y);
+       
+       //hack to fix bizarre tearing on the screen diagonal when creating a square grid
+       if(sides == 4)
+         renderContext.rotate(0.0001);
+       //-------------------------------------------------------------------------------
+       
        renderContext.applyMatrix(transforms[i]);
        unit.draw(renderContext);
        renderContext.popMatrix();

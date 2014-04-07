@@ -25,9 +25,11 @@ class PatternTriangle {
     canvas.resize(canvasWidth+2, canvasHeight+2);
 
     mask.beginDraw();
+    mask.noSmooth();
     mask.background(0);
     mask.fill(255);
     mask.stroke(255);
+    mask.strokeWeight(2);
     mask.triangle(pt1.x, pt1.y, pt2.x, pt2.y, pt3.x, pt3.y);
     mask.endDraw();
     

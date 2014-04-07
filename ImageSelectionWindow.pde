@@ -1,7 +1,7 @@
 //THIS CLASS IS A SECOND PAPPLET THAT FUNCTIONS AS THE IMAGE SELECTION WINDOW 
 public class ImageSelectionWindow extends PApplet {
 
-  TileExplorerGUI parent;
+  TileExplorer2 parent;
   ControlP5 cp5;
   
   PImage previewImage, textureImage;
@@ -23,12 +23,10 @@ public class ImageSelectionWindow extends PApplet {
   private PVector mouseDragOffsetTL, mouseDragOffsetBR;
   
   
-  
-  
   private ImageSelectionWindow() {
   }
 
-  public ImageSelectionWindow(TileExplorerGUI theParent, int theWidth, int theHeight) {
+  public ImageSelectionWindow(TileExplorer2 theParent, int theWidth, int theHeight) {
     parent = theParent;
     this.width = theWidth;
     this.height = theHeight;
@@ -83,7 +81,7 @@ public class ImageSelectionWindow extends PApplet {
     previewImage = textureImage.get();
     
     if(previewImage.width > previewImage.height){
-       previewImage.resize(this.width, 0);
+       previewImage.resize(this.width-40, 0);
     }
     else{
        previewImage.resize(0,this.height-150);
@@ -114,7 +112,7 @@ public class ImageSelectionWindow extends PApplet {
       
       fill(255,0,0, 200);
       noStroke();
-      ellipse(textureClipRectBR.x+imageOffset.y, textureClipRectBR.y+imageOffset.y, controlHandleRadius, controlHandleRadius);
+      ellipse(textureClipRectBR.x+imageOffset.x, textureClipRectBR.y+imageOffset.y, controlHandleRadius, controlHandleRadius);
       
   }
   
@@ -125,15 +123,25 @@ public class ImageSelectionWindow extends PApplet {
                
       PVector mousePos = getOffsetMousePos();
       
-      if(PVector.dist(textureClipRectBR, mousePos) < controlHandleRadius){
-        println("BANG");
-        resizing = true;
-        dragging = false; 
-      }else if(mousePos.x > textureClipRectTL.x && mousePos.y > textureClipRectTL.y && mousePos.x < textureClipRectBR.x && mousePos.y < textureClipRectBR.y){
-        dragging = true;
-        resizing = false;
-        mouseDragOffsetTL = new PVector(mousePos.x - textureClipRectTL.x, mousePos.y - textureClipRectTL.y);
-        mouseDragOffsetBR = new PVector(mousePos.x - textureClipRectBR.x, mousePos.y - textureClipRectBR.y);
+      if(mouseButton == LEFT){
+        if(PVector.dist(textureClipRectBR, mousePos) < controlHandleRadius){
+          resizing = true;
+          dragging = false; 
+        }else if(mousePos.x > textureClipRectTL.x && mousePos.y > textureClipRectTL.y && mousePos.x < textureClipRectBR.x && mousePos.y < textureClipRectBR.y){
+          dragging = true;
+          resizing = false;
+          mouseDragOffsetTL = new PVector(mousePos.x - textureClipRectTL.x, mousePos.y - textureClipRectTL.y);
+          mouseDragOffsetBR = new PVector(mousePos.x - textureClipRectBR.x, mousePos.y - textureClipRectBR.y);
+        }
+      }else{
+        if(mousePos.x > 0 && mousePos.y > 0 && mousePos.x < previewImage.width && mousePos.y < previewImage.height ){
+          
+          setTextureClipRect(mousePos, mousePos);
+          constrainTextureClipRect();
+
+          resizing = true;
+          dragging = false; 
+        }
       }
          
     }
@@ -209,7 +217,8 @@ public class ImageSelectionWindow extends PApplet {
   }
   
   
-  void loadTextureImage(int val) {
+  void loadImageEvent(int val) {
+    println("loading image");
     selectInput("Select an image", "loadTextureImage");
   }
   
@@ -250,8 +259,8 @@ public class ImageSelectionWindow extends PApplet {
     cp5 = new ControlP5(this);
         
     cp5.addButton("LoadImage")
-    .plugTo(this,"loadTextureImage")
-    .setPosition(20,20);
+    .setPosition(20,20)
+    .plugTo(this, "loadImageEvent");
     
     cp5.addButton("generate")
     .plugTo(parent,"generate")

@@ -75,8 +75,7 @@ class SVGTile {
       this.maskedVector.shape(this.children[i], 0, 0);
     }
     maskedVector.endDraw();
-    //    int windowPosX = (int)random(this.mySVG.width-103);
-    //    int windowPosY = (int)random(this.mySVG.height-103);
+
     this.display = this.maskedVector.get();
 
     return this.display;

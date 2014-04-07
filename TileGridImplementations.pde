@@ -21,8 +21,8 @@ class HexGrid extends TileGrid{
    
       PGraphics currentContext = initGeneration(6, i_outlines);
       
-      int cellsY = (int)(renderContext.height/cellSize.x+2);
-      int cellsX = (int)(renderContext.width /cellSize.y+2);
+      int cellsY = (int)(currentContext.height/cellSize.x+2);
+      int cellsX = (int)(currentContext.width /cellSize.y+2);
     
       for (int i = 0; i < cellsX; ++i) {
         for (int j = 0; j < cellsY; ++j) {
@@ -63,8 +63,8 @@ class SquareGrid extends TileGrid{
  
       PGraphics currentContext = initGeneration(4, i_outlines);
     
-      int cellsY = (int)(renderContext.height/cellSize.x+2);
-      int cellsX = (int)(renderContext.width /cellSize.y+2);
+      int cellsY = (int)(currentContext.height/cellSize.x+2);
+      int cellsX = (int)(currentContext.width /cellSize.y+2);
     
       for (int i = 0; i < cellsX; ++i) {
         for (int j = 0; j < cellsY; ++j) {
@@ -107,8 +107,8 @@ class TriGrid extends TileGrid{
       float cellWidth  = cellSize.x;
       float cellHeight = cellSize.y;
     
-      int cellsY = (int)(renderContext.height/triHeight+2);
-      int cellsX = (int)(renderContext.width /triHeight+2);
+      int cellsY = (int)(currentContext.height/triHeight+2);
+      int cellsX = (int)(currentContext.width /triHeight+2);
     
       for (int flip = 0; flip < 2; ++flip) {
         for (int i = -1; i < cellsX; ++i) {

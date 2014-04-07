@@ -21,7 +21,6 @@
   
   
   
-  
   void setupTileExplorerGUI() {
     cp5 = new ControlP5(this);
   
@@ -47,8 +46,6 @@
     }
    
   }
-  
-  
   
   
   
@@ -81,19 +78,19 @@
   
     switch(i_type) {
     case 1:
-      gridGenerator = new HexGrid();
+      gridGenerator = new HexGrid(gridGenerator);
       break;
   
     case 2:
-      gridGenerator = new TriGrid();
+      gridGenerator = new TriGrid(gridGenerator);
       break;
   
     case 3:
-      gridGenerator = new SquareGrid();
+      gridGenerator = new SquareGrid(gridGenerator);
       break;
   
     default:
-      gridGenerator = new HexGrid();
+      gridGenerator = new HexGrid(gridGenerator);
       break;
     }
   }
@@ -141,21 +138,14 @@
   }  
   
   
-  
-  
   void useMask(int i_useMask){
    gridGenerator.useMask(i_useMask==1);
   }
   
   
-  
-  
   void missingOdds(float i_odds){
    gridGenerator.setMissingOdds(i_odds); 
   }
-  
-  
-  
   
   void printWidth(String i_value) {
     printWidthValue = Integer.parseInt(i_value);
@@ -163,7 +153,6 @@
   
     gridGenerator.setRenderSize(new PVector(printWidthValue, printHeightValue));
   }
-  
   
   
   void printHeight(String i_value) {

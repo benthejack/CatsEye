@@ -32,7 +32,7 @@ class TileGrid{
   protected String renderMode;
   
   
-  //----------------------METHODS------------------------
+  //----------------------CONSTRUCTORS------------------------
   
   //Don't create a TileGrid directly, use a subclass (hexGrid, triGrid, squareGrid)
   protected TileGrid(){
@@ -53,6 +53,34 @@ class TileGrid{
     ((PGraphics)textureImage).endDraw();
 
   }
+  
+  protected TileGrid(TileGrid i_toCopy){
+    
+    //default settings
+    renderSize = i_toCopy.getRenderSize();
+    previewSize = i_toCopy.getPreviewSize();
+    cellRadius = i_toCopy.getCellRadius();
+    maskImage = i_toCopy.getMaskImage();
+    useMask = i_toCopy.isUsingMask();
+    missingOdds = i_toCopy.getMissingOdds();
+    
+    previewImage = createGraphics(100,100);
+    ((PGraphics)previewImage).beginDraw();
+    ((PGraphics)previewImage).background(0,0);
+    ((PGraphics)previewImage).endDraw();
+    
+    textureImage = createGraphics(100,100);
+    ((PGraphics)textureImage).beginDraw();
+    ((PGraphics)textureImage).background(0,0);
+    ((PGraphics)textureImage).endDraw();
+
+  }  
+  
+  
+  //----------------------------------SETTERS/GETTERS-----------------------------------------
+  
+  
+  //----setters-----
   
   public void setTexture(PImage i_texture){
     textureImage = i_texture.get(); 
@@ -89,12 +117,13 @@ class TileGrid{
     renderContext.save(i_path+i_fileSuffix);
   }
   
-  
-  
   public void useMask(boolean i_useMask){
       useMask = i_useMask;
   }
   
+  void setPreviewSize(PVector i_size){
+    previewSize = i_size;
+  }
   
   /***     
   *      This currently does nothing. It may be used in the future. 
@@ -103,15 +132,12 @@ class TileGrid{
     renderMode = i_mode;
   }
   
+  //-----getters-----
   
   public PImage getPrintImage(){
     return renderContext.get();
   }
   
-  
-  void setPreviewSize(PVector i_size){
-    previewSize = i_size;
-  }
   
   public PImage getPreviewImage(){  
     return previewImage;
@@ -132,6 +158,33 @@ class TileGrid{
      return ngonGenerator.getUnitImage(); 
   }
   
+  PVector getRenderSize(){
+   return renderSize.get(); 
+  }
+  
+  PVector getPreviewSize(){
+   return renderSize.get(); 
+  }
+  
+  float getCellRadius(){
+   return cellRadius; 
+  }
+  
+  PImage getMaskImage(){
+   return maskImage;
+  }  
+
+  boolean isUsingMask(){
+   return useMask; 
+  }
+  
+  float getMissingOdds(){
+   return missingOdds; 
+  }
+
+  
+    
+  //---------------------------------METHODS--------------------------------------
   public void generate(){
     generate(false);
   }
@@ -143,7 +196,7 @@ class TileGrid{
   }
   
   
-  //-----------------HELPER FUNCTIONS FOR USE IN SUBLCLASS GENERATE() IMPLEMENTATIONS-------------------
+  //-----------------HELPER METHODS FOR USE IN SUBLCLASS GENERATE() IMPLEMENTATIONS-------------------
  
   /***
   *     when implementing a new tilegrid subclass use this function to draw the ngongeneratior
@@ -229,7 +282,8 @@ class TileGrid{
 
   }
   
-
+  
+  
   
 }
 

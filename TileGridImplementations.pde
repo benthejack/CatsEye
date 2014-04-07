@@ -16,6 +16,10 @@ class HexGrid extends TileGrid{
    super();
  }
  
+ HexGrid(TileGrid i_oldGrid){
+   super(i_oldGrid);
+ }
+ 
  
  public void generate(boolean i_outlines){
    
@@ -59,6 +63,10 @@ class SquareGrid extends TileGrid{
    super();
  }
  
+ SquareGrid(TileGrid i_oldGrid){
+   super(i_oldGrid);
+ }
+ 
  public void generate(boolean i_outlines){
  
       PGraphics currentContext = initGeneration(4, i_outlines);
@@ -97,6 +105,10 @@ class TriGrid extends TileGrid{
   
  TriGrid(){
    super();
+ }
+ 
+ TriGrid(TileGrid i_oldGrid){
+   super(i_oldGrid);
  }
  
  public void generate(boolean i_outlines){

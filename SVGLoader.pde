@@ -1,3 +1,5 @@
+// Tile colours have been removed for now.
+
 class SVGTile {
 
   int windowPosX;
@@ -54,7 +56,7 @@ class SVGTile {
 
   PImage drawTile () {
 
-    color[]ttp = {};
+    color[]ttp = {}; // I hacked out the colours for now. will update later
 
     // vector image
     this.maskedVector = createGraphics( (int)(this.mySVG.width*scale), (int)(this.mySVG.height*scale), JAVA2D);

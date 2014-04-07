@@ -1,7 +1,7 @@
 //THIS CLASS IS A SECOND PAPPLET THAT FUNCTIONS AS THE IMAGE SELECTION WINDOW 
 public class ImageSelectionWindow extends PApplet {
 
-  TileExplorer2 parent;
+  CatsEye parent;
   ControlP5 cp5;
   
   PImage previewImage, textureImage;
@@ -26,7 +26,7 @@ public class ImageSelectionWindow extends PApplet {
   private ImageSelectionWindow() {
   }
 
-  public ImageSelectionWindow(TileExplorer2 theParent, int theWidth, int theHeight) {
+  public ImageSelectionWindow(CatsEye theParent, int theWidth, int theHeight) {
     parent = theParent;
     this.width = theWidth;
     this.height = theHeight;

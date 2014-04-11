@@ -15,10 +15,9 @@
   private int printHeightValue = 1000;
   private float cellRadius = 100;
   private boolean drawGrid = false;
+  private boolean updateDraw = false;
   
   private PImage textureImage, maskImage, backgroundImage;
-  
-  
   
   
   void setupTileExplorerGUI() {
@@ -33,28 +32,38 @@
   }
   
   
+  void flagGenerationUpdate(int guiJunk){
+    updateDraw = true;
+  }
   
+  void update(){
+   generate(); 
+   updateDraw = false;
+  }
   
   
   void drawGui(){
+    
+    if(updateDraw){
+       update(); 
+    }
+    
     image(backgroundImage, 0, 0);
     PImage patternImage = gridGenerator.getPreviewImage();
     image(patternImage, (width-patternImage.width)/2,  (height-patternImage.height)/2);
    
     if(drawGrid){
-        image(gridGenerator.getGridImage(), 0, 0);
+      PImage gridImage = gridGenerator.getGridImage();  
+      image(gridImage, (width-gridImage.width)/2,  (height-gridImage.height)/2);
     }
    
   }
   
-  
-  
-  
-  void generate(int guiJunk) { 
+  void generate() { 
     printWidthField.submit();
     printHeightField.submit();
-    println();
     gridGenerator.setTexture(imageWindow.getCropSection());
+    gridGenerator.setTextureCoords(imageWindow.getTextureCoords());
     gridGenerator.setCellRadius(cellRadius);
   
     gridGenerator.generate();
@@ -160,6 +169,9 @@
     gridGenerator.setRenderSize(new PVector(printWidthValue, printHeightValue));
   }
   
+  String getRenderMode(){
+    return gridGenerator.getRenderMode();
+  }
   
   
   // This function draws the grey and white checker background to a PGraphics object
@@ -253,7 +265,8 @@
     cp5.addButton("generate")
       .setPosition(20, 180)
         .setSize(50, 20)
-          .setGroup(globalControls);
+          .setGroup(globalControls)
+            .plugTo(this, "flagGenerationUpdate");
   
     cp5.addButton("saveImage")
       .setPosition(90, 180)
@@ -289,5 +302,19 @@
       .setPosition(20, 100)
         .setSize(120, 120)
           .setGroup(gridControls);
+  }
+  
+  void keyPressed(){
+   if(key == 'r'){
+     
+     if(getRenderMode() == P2D){
+      gridGenerator.setRenderMode(JAVA2D); 
+      imageWindow.hideTriSelectButton();
+     }else{
+      gridGenerator.setRenderMode(P2D); 
+      imageWindow.showTriSelectButton();
+     }
+     
+   }  
   }
 

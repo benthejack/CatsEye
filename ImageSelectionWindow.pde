@@ -15,12 +15,16 @@ public class ImageSelectionWindow extends PApplet {
   private int clipBoxWidth, clipBoxHeight, clipBoxX, clipBoxY;
   private float scaleFactor;
   
-  
   private Numberbox box_width, box_height, box_x, box_y;
   private float controlHandleRadius = 15; 
   
   private boolean dragging, resizing;
   private PVector mouseDragOffsetTL, mouseDragOffsetBR;
+  
+  private Toggle triSelectBtn;
+  private boolean useTriSelect = false;
+  private int triSelectedCorner;
+  private PVector[] triangularSelection = {new PVector(0,0), new PVector(0,1), new PVector(1,1)};
   
   
   private ImageSelectionWindow() {
@@ -37,7 +41,6 @@ public class ImageSelectionWindow extends PApplet {
   public void setup() {
     size(this.width, this.height);
     frameRate(25);
-   
    
     imageOffset = new PVector(0,0);
    
@@ -68,9 +71,9 @@ public class ImageSelectionWindow extends PApplet {
     box_x.setValue(clipBoxX);
     box_y.setValue(clipBoxY);
     
-    setTextureClipRect(new PVector(x,y), new PVector(x+wdth,y+hght));
+    setTextureClipRect(new PVector(x,y), new PVector(x+wdth, y+hght));
     
-    parent.generate(0);
+    parent.generate();
 
   }
   
@@ -94,9 +97,8 @@ public class ImageSelectionWindow extends PApplet {
     imageOffset.y = this.height/2-previewImage.height/2;
     
     setTextureClipRect(new PVector(0,0), new PVector(previewImage.width, previewImage.height, 0));
+    defaultTriangularSelection();
   }
-  
-  
 
   public void draw() {
       background(180);
@@ -105,6 +107,23 @@ public class ImageSelectionWindow extends PApplet {
        image(previewImage, imageOffset.x, imageOffset.y); 
       }
       
+      if(!useTriSelect)
+        drawMarquee();
+      else
+        drawTriangularSelection();
+      
+      textSize(14);
+      fill(0);
+      
+      if(parent.getRenderMode() == P2D)
+        text("P2D rendering", 20, this.height-48);
+      else
+        text("JAVA2D rendering", 20, this.height-48);
+      
+  }
+  
+  void drawMarquee(){
+    
       noFill();
       strokeWeight(2);
       stroke(255,0,0);
@@ -116,6 +135,21 @@ public class ImageSelectionWindow extends PApplet {
       
   }
   
+  void drawTriangularSelection(){
+    
+     noFill();
+     strokeWeight(2);
+     stroke(255,0,0);
+     triangle(triangularSelection[0].x+imageOffset.x, triangularSelection[0].y+imageOffset.y, triangularSelection[1].x+imageOffset.x, triangularSelection[1].y+imageOffset.y, triangularSelection[2].x+imageOffset.x, triangularSelection[2].y+imageOffset.y);
+      
+     fill(255,0,0, 200);
+     noStroke();
+     ellipse(triangularSelection[0].x+imageOffset.x, triangularSelection[0].y+imageOffset.y, controlHandleRadius, controlHandleRadius);
+     ellipse(triangularSelection[1].x+imageOffset.x, triangularSelection[1].y+imageOffset.y, controlHandleRadius, controlHandleRadius);
+     ellipse(triangularSelection[2].x+imageOffset.x, triangularSelection[2].y+imageOffset.y, controlHandleRadius, controlHandleRadius);
+    
+  }
+  
   
   
   void mousePressed(){
@@ -123,7 +157,17 @@ public class ImageSelectionWindow extends PApplet {
                
       PVector mousePos = getOffsetMousePos();
       
-      if(mouseButton == LEFT){
+      if(!useTriSelect)
+        marqueeSelect(mousePos);
+      else
+        triSelection(mousePos);
+         
+    }
+  }
+  
+  void marqueeSelect(PVector mousePos){
+    
+   if(mouseButton == LEFT){
         if(PVector.dist(textureClipRectBR, mousePos) < controlHandleRadius){
           resizing = true;
           dragging = false; 
@@ -142,39 +186,61 @@ public class ImageSelectionWindow extends PApplet {
           resizing = true;
           dragging = false; 
         }
-      }
-         
-    }
+      } 
   }
   
+  void triSelection(PVector mousePos){
+    for(int i = 0; i < triangularSelection.length; ++i){
+      if(PVector.dist(triangularSelection[i], mousePos) < controlHandleRadius){
+        triSelectedCorner = i;
+      }
+    }
+  }
   
   void mouseDragged(){
     if(textureImage != null){
       
-          PVector mousePos = getOffsetMousePos();
-      
-          if(dragging){
-              
-              setTextureClipRect(PVector.sub(mousePos, mouseDragOffsetTL), PVector.sub(mousePos, mouseDragOffsetBR));
-              
-          }else if(resizing){
-              
-              setTextureClipRect(textureClipRectTL, mousePos);
-            
-          }
+      PVector mousePos = getOffsetMousePos();
 
-          constrainTextureClipRect();
-      
-          clipBoxWidth = (int)abs(textureClipRectTL.x-textureClipRectBR.x);
-          clipBoxHeight = (int)abs(textureClipRectTL.y-textureClipRectBR.y);
-          clipBoxX = (int)min(textureClipRectTL.x,textureClipRectBR.x);
-          clipBoxY = (int)min(textureClipRectTL.y,textureClipRectBR.y);
-          box_x.setValue(clipBoxX);
-          box_y.setValue(clipBoxY);
-          box_width.setValue(clipBoxWidth);
-          box_height.setValue(clipBoxHeight);
+      if(!useTriSelect)
+        dragMarquee(mousePos);
+      else
+        dragTriangleSelection(mousePos);
        
     }
+  }
+  
+  void dragMarquee(PVector mousePos){
+      
+    if(dragging){
+        
+        setTextureClipRect(PVector.sub(mousePos, mouseDragOffsetTL), PVector.sub(mousePos, mouseDragOffsetBR));
+        
+    }else if(resizing){
+        
+        setTextureClipRect(textureClipRectTL, mousePos);
+      
+    }
+
+    constrainTextureClipRect();
+
+    clipBoxWidth = (int)abs(textureClipRectTL.x-textureClipRectBR.x);
+    clipBoxHeight = (int)abs(textureClipRectTL.y-textureClipRectBR.y);
+    clipBoxX = (int)min(textureClipRectTL.x,textureClipRectBR.x);
+    clipBoxY = (int)min(textureClipRectTL.y,textureClipRectBR.y);
+    box_x.setValue(clipBoxX);
+    box_y.setValue(clipBoxY);
+    box_width.setValue(clipBoxWidth);
+    box_height.setValue(clipBoxHeight); 
+  }
+  
+  void dragTriangleSelection(PVector mousePos){
+      
+    if(triSelectedCorner != -1){
+      triangularSelection[triSelectedCorner] = mousePos.get();
+      constrainTriCorner(triangularSelection[triSelectedCorner]);
+    }
+    
   }
   
   PVector getOffsetMousePos(){
@@ -210,12 +276,57 @@ public class ImageSelectionWindow extends PApplet {
    
   }
   
-  public PImage getCropSection(){
+  void constrainTriCorner(PVector i_corner){
+     i_corner.x = min(i_corner.x, previewImage.width); 
+     i_corner.x = max(i_corner.x, 0);  
+     i_corner.y = min(i_corner.y, previewImage.height); 
+     i_corner.y = max(i_corner.y, 0);  
+  }
+  
+  
+  void defaultTriangularSelection(){
    
-    return textureImage.get((int)(textureClipRectTL.x/scaleFactor), (int)(textureClipRectTL.y/scaleFactor), (int)((textureClipRectBR.x - textureClipRectTL.x)/scaleFactor), (int)((textureClipRectBR.y - textureClipRectTL.y)/scaleFactor));
+   triangularSelection[0] = new PVector(0, 0);
+   triangularSelection[1] = new PVector(previewImage.width, 0);
+   triangularSelection[2] = new PVector(triangularSelection[2].x/previewImage.width, triangularSelection[2].y/previewImage.height);
     
   }
   
+  public PImage getCropSection(){
+   
+    if(!useTriSelect)
+      return textureImage.get((int)(textureClipRectTL.x/scaleFactor), (int)(textureClipRectTL.y/scaleFactor), (int)((textureClipRectBR.x - textureClipRectTL.x)/scaleFactor), (int)((textureClipRectBR.y - textureClipRectTL.y)/scaleFactor));
+    else
+      return textureImage;
+      
+  }
+  
+  public PVector[] getTextureCoords(){
+   return useTriSelect ? getTriTexCoords() : getMarqueeTexCoords();
+  }
+  
+  public PVector[] getMarqueeTexCoords(){
+   
+   PVector[] out = {
+     new PVector(0, 1),
+     new PVector(1, 1),
+     new PVector(1, 0)
+   };
+    
+   return out;
+ 
+  } 
+  
+  public PVector[] getTriTexCoords(){
+   PVector[] out = new PVector[3];
+   
+   out[0] = new PVector(triangularSelection[0].x/previewImage.width, triangularSelection[0].y/previewImage.height);
+   out[1] = new PVector(triangularSelection[1].x/previewImage.width, triangularSelection[1].y/previewImage.height);
+   out[2] = new PVector(triangularSelection[2].x/previewImage.width, triangularSelection[2].y/previewImage.height);
+    
+   return out;
+   
+  } 
   
   void loadImageEvent(int val) {
     println("loading image");
@@ -247,12 +358,18 @@ public class ImageSelectionWindow extends PApplet {
     }
   }
  
-
-
+ 
   public ControlP5 control() {
     return cp5;
   }
   
+  public void showTriSelectButton(){
+    triSelectBtn.show();
+  }
+  
+  public void hideTriSelectButton(){
+    triSelectBtn.hide();
+  }
   
   
   void createGuiControls(){
@@ -263,7 +380,7 @@ public class ImageSelectionWindow extends PApplet {
     .plugTo(this, "loadImageEvent");
     
     cp5.addButton("generate")
-    .plugTo(parent,"generate")
+    .plugTo(parent,"flagGenerationUpdate")
     .setPosition(100,20);
     
     cp5.addButton("randomize")
@@ -294,7 +411,6 @@ public class ImageSelectionWindow extends PApplet {
             .setRange(0,10000)
                .plugTo(this,"clipBoxX");
 
-            
     box_y = cp5.addNumberbox("box_y")
     .setPosition(520, 20)
       .setSize(45, 14)
@@ -302,6 +418,11 @@ public class ImageSelectionWindow extends PApplet {
           .setValue(0)
             .setRange(0,10000)
               .plugTo(this,"clipBoxY"); 
+              
+    triSelectBtn = cp5.addToggle("useTriSelect")
+      .setPosition(this.width-60, this.height-60)
+        .setSize(20, 20)
+          .hide();
     
   }
   

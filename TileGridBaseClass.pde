@@ -26,10 +26,11 @@ class TileGrid{
   protected float cellRadius;
   protected PVector cellSize;
   protected PVector renderSize, previewSize;
+  protected PVector[] texCoords;
   
   protected boolean useMask;
   
-  protected String renderMode;
+  protected String renderMode = JAVA2D;
   
   
   //----------------------CONSTRUCTORS------------------------
@@ -40,7 +41,12 @@ class TileGrid{
     //default settings
     renderSize = new PVector(width, height);
     previewSize = new PVector(width, height);
-
+    
+    texCoords = new PVector[3];
+    texCoords[0] = new PVector(0, 1);
+    texCoords[1] = new PVector(1, 1);
+    texCoords[2] = new PVector(1, 0);
+  
     cellRadius = 100;
     previewImage = createGraphics(100,100);
     ((PGraphics)previewImage).beginDraw();
@@ -63,6 +69,7 @@ class TileGrid{
     maskImage = i_toCopy.getMaskImage();
     useMask = i_toCopy.isUsingMask();
     missingOdds = i_toCopy.getMissingOdds();
+    texCoords =  i_toCopy.getTextureCoords();
     
     previewImage = createGraphics(100,100);
     ((PGraphics)previewImage).beginDraw();
@@ -85,6 +92,10 @@ class TileGrid{
   public void setTexture(PImage i_texture){
     textureImage = i_texture.get(); 
   }
+  
+  public void setTextureCoords(PVector[] i_texCoords){
+    texCoords = i_texCoords; 
+  } 
   
   public void setMask(PImage i_mask){
     maskImage = i_mask.get();
@@ -126,7 +137,7 @@ class TileGrid{
   }
   
   /***     
-  *      This currently does nothing. It may be used in the future. 
+  *      This changes between rendering modes. The options are JAVA2D and P2D 
   ***/
   public void setRenderMode(String i_mode){
     renderMode = i_mode;
@@ -138,7 +149,6 @@ class TileGrid{
     return renderContext.get();
   }
   
-  
   public PImage getPreviewImage(){  
     return previewImage;
   }
@@ -148,7 +158,7 @@ class TileGrid{
     if(!gridGenerated){
        generate(true);
        gridPreviewImage = gridContext.get();
-       gridPreviewImage.resize((int)previewSize.x, (int)previewSize.y);
+       gridPreviewImage.resize(renderContext.width >= renderContext.height ? (int)previewSize.x : 0, renderContext.height > renderContext.width ? (int)previewSize.y : 0);
      } 
      
      return gridPreviewImage;
@@ -163,8 +173,12 @@ class TileGrid{
   }
   
   PVector getPreviewSize(){
-   return renderSize.get(); 
+   return previewSize.get(); 
   }
+  
+  public PVector[] getTextureCoords(){
+    return texCoords; 
+  } 
   
   float getCellRadius(){
    return cellRadius; 
@@ -182,6 +196,10 @@ class TileGrid{
    return missingOdds; 
   }
 
+  String getRenderMode(){
+   return renderMode; 
+  }
+  
   
     
   //---------------------------------METHODS--------------------------------------
@@ -219,17 +237,21 @@ class TileGrid{
   ***/
   protected PGraphics initGeneration(int cellSides, boolean i_outlines){
     
-    ngonGenerator = new NGonGenerator(cellSides, cellRadius, textureImage);
+    if(renderMode == JAVA2D)
+      ngonGenerator = new Java2DNgonGenerator(cellSides, cellRadius, textureImage);
+    else
+      ngonGenerator = new P2DNgonGenerator(cellSides, cellRadius, textureImage, texCoords);   
+    
     cellSize = new PVector(ngonGenerator.cellWidth(),  ngonGenerator.cellHeight());
     
     if(i_outlines){
-      gridContext = createGraphics((int)renderSize.x, (int)renderSize.y);
+      gridContext = createGraphics((int)renderSize.x, (int)renderSize.y, renderMode);
       gridContext.beginDraw();
       gridContext.background(0,0);
       return gridContext;
     }
     else{
-      renderContext = createGraphics((int)renderSize.x, (int)renderSize.y);
+      renderContext = createGraphics((int)renderSize.x, (int)renderSize.y, renderMode);
       renderContext.beginDraw();
       renderContext.background(0,0);
       return renderContext;  

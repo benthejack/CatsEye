@@ -1,4 +1,13 @@
-//THIS CLASS IS A SECOND PAPPLET THAT FUNCTIONS AS THE IMAGE SELECTION WINDOW 
+/*---------------------------------------------------------------------------------------------
+*
+*    ImageSelectionWindow
+*    
+*    PApplet class that implements the image cropping and selection window
+*
+*    Ben Jack 12/4/2014 
+*
+*---------------------------------------------------------------------------------------------*/
+
 public class ImageSelectionWindow extends PApplet {
 
   CatsEye parent;
@@ -27,15 +36,17 @@ public class ImageSelectionWindow extends PApplet {
   private PVector[] triangularSelection = {new PVector(0,0), new PVector(0,1), new PVector(1,1)};
   
   
+  //------------------------------CONSTRUCTORS/SETUP-----------------------------------
+  
   private ImageSelectionWindow() {
   }
+
 
   public ImageSelectionWindow(CatsEye theParent, int theWidth, int theHeight) {
     parent = theParent;
     this.width = theWidth;
     this.height = theHeight;
   }
-
 
   
   public void setup() {
@@ -50,33 +61,8 @@ public class ImageSelectionWindow extends PApplet {
   }
   
   
-  void controlEvent(ControlEvent theEvent) {
-    if(theEvent.isFrom(box_x) || theEvent.isFrom(box_y) || theEvent.isFrom(box_width) || theEvent.isFrom(box_height)) {
-       setTextureClipRect(new PVector(clipBoxX,clipBoxY,0), new PVector(clipBoxX+clipBoxWidth,clipBoxY+clipBoxHeight,0));
-       constrainTextureClipRect();
-    }
-  }
   
-  
-  public void randomize(int value){
-    
-    float wdth = clipBoxWidth > 0 ? clipBoxWidth : random(previewImage.width);
-    float hght = clipBoxHeight > 0 ? clipBoxHeight : random(previewImage.height);
-    float x = random((previewImage.width)-wdth);
-    float y = random((previewImage.height)-hght);
-    
-
-    clipBoxX = (int)(x);
-    clipBoxY = (int)(y);
-    box_x.setValue(clipBoxX);
-    box_y.setValue(clipBoxY);
-    
-    setTextureClipRect(new PVector(x,y), new PVector(x+wdth, y+hght));
-    
-    parent.generate();
-
-  }
-  
+  //--------------------------------PUBLIC METHODS---------------------------------------
  
   public void setImage(PImage i_img){
      
@@ -99,6 +85,56 @@ public class ImageSelectionWindow extends PApplet {
     setTextureClipRect(new PVector(0,0), new PVector(previewImage.width, previewImage.height, 0));
     defaultTriangularSelection();
   }
+  
+  
+  /*
+  *   show and hide the toggle for triangular selection
+  */
+  
+  public void showTriSelectButton(){
+    triSelectBtn.show();
+  }
+  
+  public void hideTriSelectButton(){
+    triSelectBtn.hide();
+    useTriSelect = false;
+  }
+  
+  
+  /*
+  *   returns a PImage that is cropped by the current selection tool from the currently loaded texture image
+  */
+  
+  public PImage getCropSection(){
+   
+    if(!useTriSelect)
+      return textureImage.get((int)(textureClipRectTL.x/scaleFactor), (int)(textureClipRectTL.y/scaleFactor), (int)((textureClipRectBR.x - textureClipRectTL.x)/scaleFactor), (int)((textureClipRectBR.y - textureClipRectTL.y)/scaleFactor));
+    else
+      return textureImage;
+      
+  }
+  
+  
+  /*
+  *   returns a PVector Array with a length of three of texture coordinates from current selection tool
+  */
+  
+  public PVector[] getTextureCoords(){
+   return useTriSelect ? getTriTexCoords() : getMarqueeTexCoords();
+  }
+  
+  
+  
+  
+  
+  //--------------------------------------PRIVATE METHODS----------------------------------------
+  //although some of these are public due to controlP5 needs or otherwise, they shouldn't be used 
+  
+  
+  
+  /*
+  *   draw functions
+  */
 
   public void draw() {
       background(180);
@@ -122,7 +158,7 @@ public class ImageSelectionWindow extends PApplet {
       
   }
   
-  void drawMarquee(){
+  private void drawMarquee(){
     
       noFill();
       strokeWeight(2);
@@ -135,7 +171,7 @@ public class ImageSelectionWindow extends PApplet {
       
   }
   
-  void drawTriangularSelection(){
+  private void drawTriangularSelection(){
     
      noFill();
      strokeWeight(2);
@@ -152,7 +188,19 @@ public class ImageSelectionWindow extends PApplet {
   
   
   
-  void mousePressed(){
+  /*
+  *   user interaction functions for setting the various selection tools
+  */
+  
+  private PVector getOffsetMousePos(){
+   
+   PVector offsetMouse = new PVector(mouseX, mouseY);
+   offsetMouse.sub(imageOffset);
+   return offsetMouse; 
+    
+  }
+  
+  public void mousePressed(){
     if(textureImage != null){
                
       PVector mousePos = getOffsetMousePos();
@@ -165,7 +213,7 @@ public class ImageSelectionWindow extends PApplet {
     }
   }
   
-  void marqueeSelect(PVector mousePos){
+  private void marqueeSelect(PVector mousePos){
     
    if(mouseButton == LEFT){
         if(PVector.dist(textureClipRectBR, mousePos) < controlHandleRadius){
@@ -189,7 +237,7 @@ public class ImageSelectionWindow extends PApplet {
       } 
   }
   
-  void triSelection(PVector mousePos){
+  private void triSelection(PVector mousePos){
     for(int i = 0; i < triangularSelection.length; ++i){
       if(PVector.dist(triangularSelection[i], mousePos) < controlHandleRadius){
         triSelectedCorner = i;
@@ -197,7 +245,7 @@ public class ImageSelectionWindow extends PApplet {
     }
   }
   
-  void mouseDragged(){
+  public void mouseDragged(){
     if(textureImage != null){
       
       PVector mousePos = getOffsetMousePos();
@@ -210,7 +258,7 @@ public class ImageSelectionWindow extends PApplet {
     }
   }
   
-  void dragMarquee(PVector mousePos){
+  private void dragMarquee(PVector mousePos){
       
     if(dragging){
         
@@ -234,7 +282,7 @@ public class ImageSelectionWindow extends PApplet {
     box_height.setValue(clipBoxHeight); 
   }
   
-  void dragTriangleSelection(PVector mousePos){
+  private void dragTriangleSelection(PVector mousePos){
       
     if(triSelectedCorner != -1){
       triangularSelection[triSelectedCorner] = mousePos.get();
@@ -243,26 +291,29 @@ public class ImageSelectionWindow extends PApplet {
     
   }
   
-  PVector getOffsetMousePos(){
-   
-   PVector offsetMouse = new PVector(mouseX, mouseY);
-   offsetMouse.sub(imageOffset);
-   return offsetMouse; 
-    
-  }
-  
-  void mouseReleased(){
+  public void mouseReleased(){
     resizing = false;
     dragging = false;
   }
   
+ 
+  
+  
+  /*
+  *   helper function to set marquee tool (clipRect) 
+  */
   
   private void setTextureClipRect(PVector i_TL, PVector i_BR){
     textureClipRectTL = i_TL;
     textureClipRectBR = i_BR;
   }
   
-  void constrainTextureClipRect(){
+  
+  /*
+  *   the following two functions limit the selection to be within the image's bounds 
+  */
+  
+  private void constrainTextureClipRect(){
     
    textureClipRectTL.x = max(textureClipRectTL.x, 0);
    textureClipRectTL.y = max(textureClipRectTL.y, 0);
@@ -276,7 +327,7 @@ public class ImageSelectionWindow extends PApplet {
    
   }
   
-  void constrainTriCorner(PVector i_corner){
+  private void constrainTriCorner(PVector i_corner){
      i_corner.x = min(i_corner.x, previewImage.width); 
      i_corner.x = max(i_corner.x, 0);  
      i_corner.y = min(i_corner.y, previewImage.height); 
@@ -284,28 +335,38 @@ public class ImageSelectionWindow extends PApplet {
   }
   
   
-  void defaultTriangularSelection(){
+  
+  
+  /*
+  *   randomizes the current marquee selection and triggers pattern generation.
+  */  
    
-   triangularSelection[0] = new PVector(0, 0);
-   triangularSelection[1] = new PVector(previewImage.width, 0);
-   triangularSelection[2] = new PVector(triangularSelection[2].x/previewImage.width, triangularSelection[2].y/previewImage.height);
+   public void randomizeMarqueeSelection(int value){
     
+    float wdth = clipBoxWidth > 0 ? clipBoxWidth : random(previewImage.width);
+    float hght = clipBoxHeight > 0 ? clipBoxHeight : random(previewImage.height);
+    float x = random((previewImage.width)-wdth);
+    float y = random((previewImage.height)-hght);
+    
+
+    clipBoxX = (int)(x);
+    clipBoxY = (int)(y);
+    box_x.setValue(clipBoxX);
+    box_y.setValue(clipBoxY);
+    
+    setTextureClipRect(new PVector(x,y), new PVector(x+wdth, y+hght));
+    
+    parent.generate();
+
   }
   
-  public PImage getCropSection(){
-   
-    if(!useTriSelect)
-      return textureImage.get((int)(textureClipRectTL.x/scaleFactor), (int)(textureClipRectTL.y/scaleFactor), (int)((textureClipRectBR.x - textureClipRectTL.x)/scaleFactor), (int)((textureClipRectBR.y - textureClipRectTL.y)/scaleFactor));
-    else
-      return textureImage;
-      
-  }
+ 
+ 
+  /*
+  *   helper methods for getting the texture coords of various selection tools 
+  */
   
-  public PVector[] getTextureCoords(){
-   return useTriSelect ? getTriTexCoords() : getMarqueeTexCoords();
-  }
-  
-  public PVector[] getMarqueeTexCoords(){
+  private PVector[] getMarqueeTexCoords(){
    
    PVector[] out = {
      new PVector(0, 1),
@@ -317,7 +378,7 @@ public class ImageSelectionWindow extends PApplet {
  
   } 
   
-  public PVector[] getTriTexCoords(){
+  private PVector[] getTriTexCoords(){
    PVector[] out = new PVector[3];
    
    out[0] = new PVector(triangularSelection[0].x/previewImage.width, triangularSelection[0].y/previewImage.height);
@@ -328,12 +389,18 @@ public class ImageSelectionWindow extends PApplet {
    
   } 
   
-  void loadImageEvent(int val) {
+  
+  
+  /*
+  *   loadImageEvent is triggered by the loadImage gui button, loadTextureImage is the callback to the filepicker
+  */
+  
+  public void loadImageEvent(int i_GUIJunk) {
     println("loading image");
     selectInput("Select an image", "loadTextureImage");
   }
   
-  void loadTextureImage(File selection) {
+  public void loadTextureImage(File selection) {
     
     if (selection == null) {
       println("Window was closed or the user hit cancel.");
@@ -357,34 +424,44 @@ public class ImageSelectionWindow extends PApplet {
      
     }
   }
- 
- 
-  public ControlP5 control() {
-    return cp5;
+  
+  
+  /*
+  *   controlEvent() registers changes to the GUI number sliders and changes the selection box accordingly
+  */
+  
+  public void controlEvent(ControlEvent theEvent) {
+    if(theEvent.isFrom(box_x) || theEvent.isFrom(box_y) || theEvent.isFrom(box_width) || theEvent.isFrom(box_height)) {
+       setTextureClipRect(new PVector(clipBoxX,clipBoxY,0), new PVector(clipBoxX+clipBoxWidth,clipBoxY+clipBoxHeight,0));
+       constrainTextureClipRect();
+    }
   }
   
-  public void showTriSelectButton(){
-    triSelectBtn.show();
+  
+  private void defaultTriangularSelection(){
+   
+   triangularSelection[0] = new PVector(0, 0);
+   triangularSelection[1] = new PVector(previewImage.width, 0);
+   triangularSelection[2] = new PVector(0, previewImage.height);
+    
   }
   
-  public void hideTriSelectButton(){
-    triSelectBtn.hide();
-  }
+  //--------------------------------------------ACTUAL GUI CREATION--------------------------------------------------------
   
-  
-  void createGuiControls(){
+  private void createGuiControls(){
     cp5 = new ControlP5(this);
         
     cp5.addButton("LoadImage")
     .setPosition(20,20)
-    .plugTo(this, "loadImageEvent");
+      .plugTo(this, "loadImageEvent");
     
     cp5.addButton("generate")
-    .plugTo(parent,"flagGenerationUpdate")
-    .setPosition(100,20);
+    .plugTo(parent,"generate")
+      .setPosition(100,20);
     
     cp5.addButton("randomize")
-    .setPosition(180,20);
+    .setPosition(180,20)
+      .plugTo(this, "randomizeMarqueeSelection");
     
     box_width = cp5.addNumberbox("box_width")
     .setPosition(280, 20)

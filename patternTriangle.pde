@@ -1,3 +1,13 @@
+/*---------------------------------------------------------------------------------------------
+*
+*    PatternTriangle
+*    
+*    a masked texture triangle used in the Java2DNgonGenerator
+*
+*    Ben Jack 12/4/2014 
+*
+*---------------------------------------------------------------------------------------------*/
+
 class PatternTriangle {
 
   private PVector pt1, pt2, pt3;
@@ -19,7 +29,7 @@ class PatternTriangle {
     int canvasWidth  = (int)(maxX-minX);
     int canvasHeight = (int)(maxY-minY);
 
-    mask   = createGraphics(canvasWidth+2, canvasHeight+2);
+    mask = createGraphics(canvasWidth+2, canvasHeight+2);
 
     canvas = texture.get();
     canvas.resize(canvasWidth+2, canvasHeight+2);
@@ -36,10 +46,14 @@ class PatternTriangle {
     canvas.mask(mask);
   }
 
+
+
   void draw(PGraphics renderContext) {
 
     renderContext.image(canvas, 0, 0);
   }
+
+
 
   void drawOutline(PGraphics renderContext) {
 
@@ -53,6 +67,8 @@ class PatternTriangle {
     renderContext.line(pt2.x, pt2.y, pt3.x, pt3.y);
     renderContext.line(pt3.x, pt3.y, pt1.x, pt1.y);
   }
+  
+  
 
   PImage getImage() {
     return canvas;

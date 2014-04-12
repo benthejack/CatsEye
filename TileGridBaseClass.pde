@@ -209,8 +209,7 @@ class TileGrid{
   
   public void generate(boolean i_outlines){
     /*Implement this function in a subclass
-    If creating subclasses it is up to you to
-    implement features such as missingOdds*/
+      see the helper methods below*/
   }
   
   

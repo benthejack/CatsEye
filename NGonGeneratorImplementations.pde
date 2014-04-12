@@ -1,3 +1,18 @@
+/*---------------------------------------------------------------------------------------------
+*
+*    Java2DNgonGenerator
+*    
+*    subclass of NGonGenerator that uses JAVA2D to render images.
+*    this class uses a masked image that is transformed several times.
+*
+*    The benefit of using JAVA2D is that it can export REALLY big images.
+*    The drawback is that a lot of features can't be implemented in JAVA2D
+*
+*    Ben Jack 11/4/2014 
+*
+*---------------------------------------------------------------------------------------------*/
+
+
 class Java2DNgonGenerator extends NGonGenerator {
 
   private PatternTriangle unit;
@@ -46,7 +61,7 @@ class Java2DNgonGenerator extends NGonGenerator {
       renderContext.pushMatrix();
       renderContext.translate(i_x, i_y);
 
-      //hack to fix bizarre tearing on the screen diagonal when creating a square grid
+      //hack to fix bizarre single pixel tearing on the screen diagonal when creating a square grid
       if (sides == 4)
         renderContext.rotate(0.0001);
       //-------------------------------------------------------------------------------
@@ -75,6 +90,25 @@ class Java2DNgonGenerator extends NGonGenerator {
 
 
 
+
+
+
+
+
+/*---------------------------------------------------------------------------------------------
+*
+*    P2DNgonGenerator
+*    
+*    subclass of NGonGenerator that uses JAVA2D to render images.
+*    this class uses a textured PShape using texture coordinates.
+*
+*    The benefit of using P2D is that it enables a lot of features by using openGl.
+*    The drawback is that the size of images that can be produced are limited by the 
+*    graphics card of the user.
+*
+*    Ben Jack 11/4/2014 
+*
+*---------------------------------------------------------------------------------------------*/
 
 
 

@@ -1,3 +1,14 @@
+/*---------------------------------------------------------------------------------------------
+*
+*    SVGTile
+*    
+*    for loading and colouring SVG images. needs re-implementing, probably doesn't work currently
+*
+*    Ben Jack 12/4/2014 
+*
+*---------------------------------------------------------------------------------------------*/
+
+
 // Tile colours have been removed for now.
 
 class SVGTile {

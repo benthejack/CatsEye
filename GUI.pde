@@ -1,6 +1,26 @@
+/*---------------------------------------------------------------------------------------------
+*
+*    GUI FILE, due to limitations with the processing IDE this hasn't been put into a class as of yet
+*    
+*    creates GUI and controls 
+*
+*    Ben Jack 12/4/2014 
+*
+*---------------------------------------------------------------------------------------------*/
+
   import java.awt.Frame;
   import java.awt.BorderLayout;
   import controlP5.*;
+  
+  
+  
+  
+  
+  //--------------------GLOBAL VARIABLES-------------------
+  
+  public final int HEXAGONGRID = 1;
+  public final int TRIANGLEGRID = 2;
+  public final int SQUAREGRID = 3;
   
   
   private ControlP5 cp5;
@@ -15,12 +35,24 @@
   private int printHeightValue = 1000;
   private float cellRadius = 100;
   private boolean drawGrid = false;
-  private boolean updateDraw = false;
+  private boolean triggerGeneration = false;
   
   private PImage textureImage, maskImage, backgroundImage;
   
   
-  void setupTileExplorerGUI() {
+  
+  
+  
+  
+  
+  //-----------------------------------PUBLIC METHODS--------------------------------------
+  
+  
+  /*
+  *   initialize GUI
+  */
+  
+  public void setupTileExplorerGUI() {
     cp5 = new ControlP5(this);
   
     gridControlGroup();
@@ -31,22 +63,14 @@
     backgroundImage = createCheckerBackground();
   }
   
+ 
+  /*
+  *   draw GUI and images (main draw function)
+  */
   
-  void flagGenerationUpdate(int guiJunk){
-    updateDraw = true;
-  }
-  
-  void update(){
-   generate(); 
-   updateDraw = false;
-  }
-  
-  
-  void drawGui(){
+  public void drawGui(){
     
-    if(updateDraw){
-       update(); 
-    }
+    update();
     
     image(backgroundImage, 0, 0);
     PImage patternImage = gridGenerator.getPreviewImage();
@@ -59,21 +83,57 @@
    
   }
   
-  void generate() { 
-    printWidthField.submit();
-    printHeightField.submit();
-    gridGenerator.setTexture(imageWindow.getCropSection());
-    gridGenerator.setTextureCoords(imageWindow.getTextureCoords());
-    gridGenerator.setCellRadius(cellRadius);
   
-    gridGenerator.generate();
+  
+  /*
+  *   flag program to generate the pattern. This is seperated from
+  *   the actual code to generate the pattern because openGL calls
+  *   can only be in the main thread and the GUI button calls run in
+  *   a second thread.
+  */
+  
+  public void generate() { 
+    triggerGeneration = true;
   }
   
   
   
+  /* 
+  *   set whether to use a mask or not (1=use mask, 0=dont use. not boolean due to controlP5 limitations). 
+  */
   
-  void saveImage(int guiJunk) { 
+  public void useMask(int i_useMask){
+    gridGenerator.useMask(i_useMask==1);
+  }
   
+  
+  
+  /* 
+  *   set missing odds (chance a grid tile will not be drawn)
+  */
+  
+  public void missingOdds(float i_odds){
+   gridGenerator.setMissingOdds(i_odds); 
+  }
+  
+  
+  
+  /* 
+  *   returns current render mode. possible values are currently JAVA2D or P2D.
+  */
+  
+  public String getRenderMode(){
+    return gridGenerator.getRenderMode();
+  }
+  
+  
+  
+  /* 
+  *   trigger image save. Images are saved in nested folders ordered by date and time
+  */
+  
+  public void saveImage(int guiJunk) { 
+    
     String[] months = {
       "january", "febuary", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"
     };
@@ -83,18 +143,22 @@
   
   
   
-  void changeGridType(int i_type) {
+  /*
+  *   choose grid type. current possibilities are HEXAGONGRID, TRIANGLEGRID, or SQUAREGRID
+  */
+  
+  public void changeGridType(int i_type) {
   
     switch(i_type) {
-    case 1:
+    case HEXAGONGRID:
       gridGenerator = new HexGrid(gridGenerator);
       break;
   
-    case 2:
+    case TRIANGLEGRID:
       gridGenerator = new TriGrid(gridGenerator);
       break;
   
-    case 3:
+    case SQUAREGRID:
       gridGenerator = new SquareGrid(gridGenerator);
       break;
   
@@ -107,8 +171,37 @@
   
   
   
-  //Creates secondary GUI window---------------------------------------------------------
-  ImageSelectionWindow addImageWindow(String theName, int theWidth, int theHeight) {
+  /*
+  *   data update function
+  */
+  
+  public void update(){
+    if(triggerGeneration){
+       generatePattern(); 
+    }
+  }
+  
+  
+
+  /*
+  *   open mask selection filepicker
+  */
+  
+  public void loadMask(int val) {
+    selectInput("Select an image", "maskSelected");
+  }
+  
+  
+  
+  //--------------------------------------PRIVATE METHODS----------------------------------------
+  //although some of these are public due to controlP5 needs or otherwise, they shouldn't be used 
+  
+  
+  /*
+  *   creates image selection GUI window
+  */
+
+  private ImageSelectionWindow addImageWindow(String theName, int theWidth, int theHeight) {
     Frame f = new Frame(theName);
     ImageSelectionWindow p = new ImageSelectionWindow(this, theWidth, theHeight);
     f.add(p);
@@ -123,12 +216,11 @@
   
   
   
+  /*
+  *   callback function for mask selection filepicker
+  */
   
-  void loadMask(int val) {
-    selectInput("Select an image", "maskSelected");
-  }
-  
-  void maskSelected(File selection) {
+  public void maskSelected(File selection) {
     if (selection == null) {
       println("Window was closed or the user hit cancel.");
     } 
@@ -147,35 +239,13 @@
   }  
   
   
-  void useMask(int i_useMask){
-   gridGenerator.useMask(i_useMask==1);
-  }
+
   
+  /*
+  *   draws a grey and white checker pattern to a PGraphics object
+  */
   
-  void missingOdds(float i_odds){
-   gridGenerator.setMissingOdds(i_odds); 
-  }
-  
-  void printWidth(String i_value) {
-    printWidthValue = Integer.parseInt(i_value);
-      println(printWidthValue);
-  
-    gridGenerator.setRenderSize(new PVector(printWidthValue, printHeightValue));
-  }
-  
-  
-  void printHeight(String i_value) {
-    printHeightValue = Integer.parseInt(i_value);
-    gridGenerator.setRenderSize(new PVector(printWidthValue, printHeightValue));
-  }
-  
-  String getRenderMode(){
-    return gridGenerator.getRenderMode();
-  }
-  
-  
-  // This function draws the grey and white checker background to a PGraphics object
-  PImage createCheckerBackground(){
+  private PImage createCheckerBackground(){
    
     int checkerCount = 100;
     PGraphics checkerGfx = createGraphics(width, height);
@@ -202,7 +272,45 @@
   
   
   
-  //**************************************ACTUAL GUI CREATION***************************************
+  /*
+  *   the function that actually generates the pattern. This is
+  *   seperated from generate() because openGL calls can only be
+  *   in the main thread and the GUI button calls run in a second thread.
+  */
+  
+  private void generatePattern(){
+   
+    printWidthField.submit();
+    printHeightField.submit();
+    gridGenerator.setTexture(imageWindow.getCropSection());
+    gridGenerator.setTextureCoords(imageWindow.getTextureCoords());
+    gridGenerator.setCellRadius(cellRadius);
+  
+    gridGenerator.generate();
+    
+    triggerGeneration = false;
+    
+  }
+  
+  
+  
+  /*
+  *   helper functions to turn textbox input into integers
+  */
+  
+  private void printWidth(String i_value) {
+    printWidthValue = Integer.parseInt(i_value);  
+    gridGenerator.setRenderSize(new PVector(printWidthValue, printHeightValue));
+  }
+  
+  private void printHeight(String i_value) {
+    printHeightValue = Integer.parseInt(i_value);
+    gridGenerator.setRenderSize(new PVector(printWidthValue, printHeightValue));
+  }
+  
+  
+  
+  //------------------------------------------ACTUAL GUI CREATION------------------------------------------
   
   void globalControlGroup() {
         
@@ -265,8 +373,7 @@
     cp5.addButton("generate")
       .setPosition(20, 180)
         .setSize(50, 20)
-          .setGroup(globalControls)
-            .plugTo(this, "flagGenerationUpdate");
+          .setGroup(globalControls);
   
     cp5.addButton("saveImage")
       .setPosition(90, 180)

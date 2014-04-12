@@ -81,6 +81,11 @@
       image(gridImage, (width-gridImage.width)/2,  (height-gridImage.height)/2);
     }
    
+    fill(255, 190);
+    noStroke();
+    rect(0,490, 160, height-490);
+    image(gridGenerator.getUnitImage(), 20, 500);
+
   }
   
   

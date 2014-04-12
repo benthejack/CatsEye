@@ -155,7 +155,7 @@ public class ImageSelectionWindow extends PApplet {
         text("P2D rendering", 20, this.height-48);
       else
         text("JAVA2D rendering", 20, this.height-48);
-      
+              
   }
   
   private void drawMarquee(){
@@ -294,6 +294,7 @@ public class ImageSelectionWindow extends PApplet {
   public void mouseReleased(){
     resizing = false;
     dragging = false;
+    triSelectedCorner = -1;
   }
   
  
@@ -434,15 +435,17 @@ public class ImageSelectionWindow extends PApplet {
     if(theEvent.isFrom(box_x) || theEvent.isFrom(box_y) || theEvent.isFrom(box_width) || theEvent.isFrom(box_height)) {
        setTextureClipRect(new PVector(clipBoxX,clipBoxY,0), new PVector(clipBoxX+clipBoxWidth,clipBoxY+clipBoxHeight,0));
        constrainTextureClipRect();
+    }else if(theEvent.isFrom(triSelectBtn)){
+      defaultTriangularSelection();
     }
   }
   
   
   private void defaultTriangularSelection(){
    
-   triangularSelection[0] = new PVector(0, 0);
-   triangularSelection[1] = new PVector(previewImage.width, 0);
-   triangularSelection[2] = new PVector(0, previewImage.height);
+   triangularSelection[0] = new PVector(textureClipRectTL.x, textureClipRectTL.y);
+   triangularSelection[1] = new PVector(textureClipRectTL.x, textureClipRectBR.y);
+   triangularSelection[2] = new PVector(textureClipRectBR.x, textureClipRectBR.y);
     
   }
   

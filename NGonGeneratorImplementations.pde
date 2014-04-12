@@ -1,21 +1,25 @@
 /*---------------------------------------------------------------------------------------------
-*
-*    Java2DNgonGenerator
-*    
-*    subclass of NGonGenerator that uses JAVA2D to render images.
-*    this class uses a masked image that is transformed several times.
-*
-*    The benefit of using JAVA2D is that it can export REALLY big images.
-*    The drawback is that a lot of features can't be implemented in JAVA2D
-*
-*    Ben Jack 11/4/2014 
-*
-*---------------------------------------------------------------------------------------------*/
+ *
+ *    Java2DNgonGenerator
+ *    
+ *    subclass of NGonGenerator that uses JAVA2D to render images.
+ *    this class uses a masked image that is transformed several times.
+ *
+ *    The benefit of using JAVA2D is that it can export REALLY big images.
+ *    The drawback is that a lot of features can't be implemented in JAVA2D
+ *
+ *    Ben Jack 11/4/2014 
+ *
+ *---------------------------------------------------------------------------------------------*/
+
+float UNITPREVIEWSIZE = 120;
+
 
 
 class Java2DNgonGenerator extends NGonGenerator {
 
   private PatternTriangle unit;
+  private PatternTriangle unitPreview;
   private PMatrix2D[] transforms;
 
   Java2DNgonGenerator(int i_segments, float i_radius, PImage i_gfx) 
@@ -25,18 +29,8 @@ class Java2DNgonGenerator extends NGonGenerator {
 
     PImage canvas = new PImage((int)i_radius*2, (int)i_radius*2, ARGB);
 
-    PVector temp1 = new PVector(i_radius, 0, 0);
-    PVector temp2 = new PVector(cos(theta)*i_radius, sin(theta)*i_radius, 0);
-
-    temp1.lerp(temp2, 0.5);
-
-    PVector f1 = new PVector(0, 0, 0);
-    PVector f2 = new PVector(i_radius, 0, 0);
-    PVector f3 = temp1.get();
-
-    unit = new PatternTriangle(f1, f2, f3, i_gfx);  
-    unitWidth = PVector.dist(f1, f3);
-    unitHeight = PVector.dist(f2, f3); 
+    unit = createUnit(i_radius, i_gfx, theta, true);
+    unitPreview = createUnit(UNITPREVIEWSIZE, i_gfx, theta, false);
 
     transforms = new PMatrix2D[i_segments*2];
     PMatrix2D flip = new PMatrix2D();
@@ -53,6 +47,28 @@ class Java2DNgonGenerator extends NGonGenerator {
       newMat.rotate((i/2)*theta);
       transforms[i] = newMat;
     }
+  }
+  
+  private PatternTriangle createUnit(float i_radius, PImage i_gfx, float i_theta, boolean i_isMainUnit){
+   
+    PVector temp1 = new PVector(i_radius, 0, 0);
+    PVector temp2 = new PVector(cos(i_theta)*i_radius, sin(i_theta)*i_radius, 0);
+
+    temp1.lerp(temp2, 0.5);
+
+    PVector f1 = new PVector(0, 0, 0);
+    PVector f2 = new PVector(i_radius, 0, 0);
+    PVector f3 = temp1.get();
+
+    PatternTriangle out = new PatternTriangle(f1, f2, f3, i_gfx);  
+
+    if(i_isMainUnit){
+      unitWidth = PVector.dist(f1, f3);
+      unitHeight = PVector.dist(f2, f3);  
+    }
+    
+    return out;
+    
   }
 
   public void drawAt(float i_x, float i_y, PGraphics renderContext) {
@@ -84,7 +100,7 @@ class Java2DNgonGenerator extends NGonGenerator {
   }
 
   public PImage getUnitImage() {
-    return unit.getImage();
+    return unitPreview.getImage();
   }
 }
 
@@ -96,19 +112,19 @@ class Java2DNgonGenerator extends NGonGenerator {
 
 
 /*---------------------------------------------------------------------------------------------
-*
-*    P2DNgonGenerator
-*    
-*    subclass of NGonGenerator that uses JAVA2D to render images.
-*    this class uses a textured PShape using texture coordinates.
-*
-*    The benefit of using P2D is that it enables a lot of features by using openGl.
-*    The drawback is that the size of images that can be produced are limited by the 
-*    graphics card of the user.
-*
-*    Ben Jack 11/4/2014 
-*
-*---------------------------------------------------------------------------------------------*/
+ *
+ *    P2DNgonGenerator
+ *    
+ *    subclass of NGonGenerator that uses JAVA2D to render images.
+ *    this class uses a textured PShape using texture coordinates.
+ *
+ *    The benefit of using P2D is that it enables a lot of features by using openGl.
+ *    The drawback is that the size of images that can be produced are limited by the 
+ *    graphics card of the user.
+ *
+ *    Ben Jack 11/4/2014 
+ *
+ *---------------------------------------------------------------------------------------------*/
 
 
 
@@ -116,14 +132,16 @@ class P2DNgonGenerator extends NGonGenerator {
 
   private PShape polygon;
   private PShape outlines;
+  private PImage tesselationUnit;
 
   P2DNgonGenerator(int i_segments, float i_radius, PImage i_gfx) {
     super(i_segments, i_radius);
-    
+
     PVector[] defaultTexCoords = {
       new PVector(0, 1), new PVector(1, 1), new PVector(1, 0)
-    };
-    init(i_gfx, defaultTexCoords);
+      };
+
+      init(i_gfx, defaultTexCoords);
   }
 
   P2DNgonGenerator(int i_segments, float i_radius, PImage i_gfx, PVector[] i_texCoords) {
@@ -132,7 +150,7 @@ class P2DNgonGenerator extends NGonGenerator {
     init(i_gfx, i_texCoords);
   }
 
-  void init(PImage i_gfx, PVector[] i_texCoords) 
+  private void init(PImage i_gfx, PVector[] i_texCoords) 
   {
     polygon = createShape();
     polygon.beginShape(TRIANGLE_FAN);
@@ -144,15 +162,17 @@ class P2DNgonGenerator extends NGonGenerator {
 
     outlines = createShape();
     outlines.beginShape(TRIANGLE_FAN);
-    outlines.stroke(255,0,0);
+    outlines.stroke(255, 0, 0);
     outlines.strokeWeight(2);
     outlines.noFill();
     createPolygon(outlines, i_texCoords);
     outlines.endShape();
+
+    tesselationUnit = createTesselationUnit(i_gfx, i_texCoords);
   }
 
-  void createPolygon(PShape i_polygon, PVector[] i_texCoords) {
-
+  private void createPolygon(PShape i_polygon, PVector[] i_texCoords) {
+    
     float theta = TWO_PI/sides;
     i_polygon.vertex(0, 0, i_texCoords[0].x, i_texCoords[0].y);
 
@@ -170,7 +190,39 @@ class P2DNgonGenerator extends NGonGenerator {
       i_polygon.vertex(pt.x, pt.y, i_texCoords[1].x, i_texCoords[1].y);
       i_polygon.vertex(mid.x, mid.y, i_texCoords[2].x, i_texCoords[2].y);
     }
-    
+  }
+
+  private PImage createTesselationUnit(PImage i_gfx, PVector[] i_texCoords) {
+
+    PGraphics out = createGraphics((int)UNITPREVIEWSIZE+10, (int)UNITPREVIEWSIZE+10, P2D);
+    out.beginDraw();
+    out.background(0, 0);
+
+    PShape tri = createShape();
+
+    tri.beginShape(TRIANGLES);
+    tri.noStroke();
+    tri.textureMode(NORMAL);
+    tri.texture(i_gfx);
+
+    float theta = TWO_PI/sides;
+    float t = 0;
+    float nt = theta;
+
+    PVector pt = new PVector(cos(t)* UNITPREVIEWSIZE, sin(t)*UNITPREVIEWSIZE);
+    PVector npt = new PVector(cos(nt)* UNITPREVIEWSIZE, sin(nt)*UNITPREVIEWSIZE);
+    PVector mid = PVector.lerp(pt, npt, 0.5);
+
+    tri.vertex(0, 0, i_texCoords[0].x, i_texCoords[0].y);
+    tri.vertex(pt.x, pt.y, i_texCoords[1].x, i_texCoords[1].y);
+    tri.vertex(mid.x, mid.y, i_texCoords[2].x, i_texCoords[2].y);
+
+    tri.endShape();
+
+    out.shape(tri);
+    out.endDraw();
+
+    return out.get();
   }
 
   public void drawAt(float i_x, float i_y, PGraphics renderContext) {
@@ -190,8 +242,7 @@ class P2DNgonGenerator extends NGonGenerator {
   }
 
   public PImage getUnitImage() {
-    return null;
+    return tesselationUnit;
   }
-  
 }
 

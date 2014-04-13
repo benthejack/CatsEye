@@ -157,16 +157,32 @@ class P2DNgonGenerator extends NGonGenerator {
     polygon.noStroke();
     polygon.textureMode(NORMAL);
     polygon.texture(i_gfx);
+    polygon.vertex(0, 0, i_texCoords[0].x, i_texCoords[0].y);
     createPolygon(polygon, i_texCoords);
     polygon.endShape();
 
-    outlines = createShape();
-    outlines.beginShape(TRIANGLE_FAN);
-    outlines.stroke(255, 0, 0);
-    outlines.strokeWeight(2);
-    outlines.noFill();
-    createPolygon(outlines, i_texCoords);
-    outlines.endShape();
+
+    PShape outer = createShape();
+    outer.beginShape();
+    outer.stroke(255);
+    outer.strokeWeight(2);
+    outer.noFill();
+    createPolygon(outer, i_texCoords);
+    outer.endShape();
+    
+    PShape inner = createShape();
+    inner.beginShape(TRIANGLE_FAN);
+    inner.stroke(255, 0, 0);
+    inner.strokeWeight(2);
+    inner.noFill();
+    inner.vertex(0, 0, i_texCoords[0].x, i_texCoords[0].y);
+    createPolygon(inner, i_texCoords);
+    inner.endShape();
+    
+    outlines = createShape(GROUP);
+    outlines.addChild(inner);
+    outlines.addChild(outer);
+    
 
     tesselationUnit = createTesselationUnit(i_gfx, i_texCoords);
   }
@@ -174,7 +190,6 @@ class P2DNgonGenerator extends NGonGenerator {
   private void createPolygon(PShape i_polygon, PVector[] i_texCoords) {
     
     float theta = TWO_PI/sides;
-    i_polygon.vertex(0, 0, i_texCoords[0].x, i_texCoords[0].y);
 
     for (int i = 0; i <= sides; ++i) {
       float t = (theta*i)+(theta/2);
@@ -245,4 +260,5 @@ class P2DNgonGenerator extends NGonGenerator {
     return tesselationUnit;
   }
 }
+
 

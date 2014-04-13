@@ -21,6 +21,8 @@
   public final int HEXAGONGRID = 1;
   public final int TRIANGLEGRID = 2;
   public final int SQUAREGRID = 3;
+  public final int VORONOIGRID = 4;
+  public final int DELAUNAYGRID = 5;
   
   
   private ControlP5 cp5;
@@ -81,7 +83,7 @@
       image(gridImage, (width-gridImage.width)/2,  (height-gridImage.height)/2);
     }
    
-    fill(255, 190);
+    fill(180, 200);
     noStroke();
     rect(0,490, 160, height-490);
     image(gridGenerator.getUnitImage(), 20, 500);
@@ -149,7 +151,7 @@
   
   
   /*
-  *   choose grid type. current possibilities are HEXAGONGRID, TRIANGLEGRID, or SQUAREGRID
+  *   choose grid type. current possibilities are HEXAGONGRID, TRIANGLEGRID, SQUAREGRID, VORONOIGRID, or DELAUNAYGRID
   */
   
   public void changeGridType(int i_type) {
@@ -165,6 +167,25 @@
   
     case SQUAREGRID:
       gridGenerator = new SquareGrid(gridGenerator);
+      break;
+      
+    case VORONOIGRID:
+      irregularGridGenerator = new VoronoiDelaunayGrid(gridGenerator);
+      gridGenerator = irregularGridGenerator;
+      irregularGridGenerator.setType(irregularGridGenerator.VORONOI);
+      irregularGridGenerator.addRandomPoints((int)cellRadius, width, height);
+      imageWindow.showTriSelectButton();
+
+      break;
+
+    case DELAUNAYGRID:
+      irregularGridGenerator = new VoronoiDelaunayGrid(gridGenerator);
+      gridGenerator = irregularGridGenerator;
+      irregularGridGenerator.setType(irregularGridGenerator.DELAUNAY);
+      irregularGridGenerator.addRandomPoints((int)cellRadius, width, height);
+      imageWindow.showTriSelectButton();
+
+
       break;
   
     default:
@@ -298,7 +319,6 @@
   }
   
   
-  
   /*
   *   helper functions to turn textbox input into integers
   */
@@ -351,10 +371,12 @@
           .setItemsPerRow(3)
             .setSpacingColumn(30)
               .setSpacingRow(20)
-                .addItem("Hex", 1)
-                  .addItem("Tri", 2)
-                    .addItem("Square", 3)
-                      .setGroup(globalControls);
+                .addItem("Hex", HEXAGONGRID)
+                  .addItem("Tri", TRIANGLEGRID)
+                    .addItem("Square", SQUAREGRID)
+                      .addItem("Voronoi", VORONOIGRID)
+                        .addItem("Delaunay", DELAUNAYGRID)
+                          .setGroup(globalControls);
   
     gridTypeButton.activate(0);
   

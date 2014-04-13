@@ -56,16 +56,15 @@ class PatternTriangle {
 
 
   void drawOutline(PGraphics renderContext) {
-
-    renderContext.stroke(0);
-    renderContext.strokeWeight(4);
-    renderContext.line(pt2.x, pt2.y, pt3.x, pt3.y);
-
     renderContext.stroke(255, 0, 0);
-    renderContext.strokeWeight(1);
+    renderContext.strokeWeight(2);
     renderContext.line(pt1.x, pt1.y, pt2.x, pt2.y);
     renderContext.line(pt2.x, pt2.y, pt3.x, pt3.y);
     renderContext.line(pt3.x, pt3.y, pt1.x, pt1.y);
+    
+    renderContext.stroke(255);
+    renderContext.strokeWeight(2);
+    renderContext.line(pt2.x, pt2.y, pt3.x, pt3.y);
   }
   
   

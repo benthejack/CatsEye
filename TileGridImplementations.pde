@@ -23,7 +23,8 @@ class HexGrid extends TileGrid{
  
  public void generate(boolean i_outlines){
    
-      PGraphics currentContext = initGeneration(6, i_outlines);
+      setupRegularNgonGenerator(6);
+      PGraphics currentContext = initGeneration(i_outlines);
       
       int cellsY = (int)(currentContext.height/cellSize.x+2);
       int cellsX = (int)(currentContext.width /cellSize.y+2);
@@ -40,7 +41,7 @@ class HexGrid extends TileGrid{
           
         }
       }
-    
+      
       completeGeneration(i_outlines);
   }
   
@@ -69,7 +70,8 @@ class SquareGrid extends TileGrid{
  
  public void generate(boolean i_outlines){
  
-      PGraphics currentContext = initGeneration(4, i_outlines);
+      setupRegularNgonGenerator(4);
+      PGraphics currentContext = initGeneration(i_outlines);
     
       int cellsY = (int)(currentContext.height/cellSize.x+2);
       int cellsX = (int)(currentContext.width /cellSize.y+2);
@@ -113,7 +115,8 @@ class TriGrid extends TileGrid{
  
  public void generate(boolean i_outlines){
    
-      PGraphics currentContext = initGeneration(3, i_outlines);
+      setupRegularNgonGenerator(3);
+      PGraphics currentContext = initGeneration(i_outlines);
     
       float triHeight  = cellSize.x + cellRadius;
       float cellWidth  = cellSize.x;

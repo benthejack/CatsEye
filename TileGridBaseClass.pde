@@ -57,6 +57,7 @@ class TileGrid {
     ((PGraphics)textureImage).beginDraw();
     ((PGraphics)textureImage).background(0, 0);
     ((PGraphics)textureImage).endDraw();
+    
   }
 
   protected TileGrid(TileGrid i_toCopy) {
@@ -80,6 +81,7 @@ class TileGrid {
     ((PGraphics)textureImage).beginDraw();
     ((PGraphics)textureImage).background(0, 0);
     ((PGraphics)textureImage).endDraw();
+    
   }  
 
 
@@ -165,7 +167,7 @@ class TileGrid {
     if (!gridGenerated) {
       generate(true);
       gridPreviewImage = gridContext.get();
-      gridPreviewImage.resize(renderContext.width >= renderContext.height ? (int)previewSize.x : 0, renderContext.height > renderContext.width ? (int)previewSize.y : 0);
+      gridPreviewImage.resize(gridContext.width >= gridContext.height ? (int)previewSize.x : 0, gridContext.height > gridContext.width ? (int)previewSize.y : 0);
     } 
 
     return gridPreviewImage;
@@ -247,21 +249,47 @@ class TileGrid {
     }
   }
 
-  /***
-   *     when implementing a new tilegrid subclass always call this at the very beginning 
-   *     of the generate() function. It sets up and returns the correct drawing context.
-   ***/
-  protected PGraphics initGeneration(int cellSides, boolean i_outlines) {
 
+  /***
+   *     when implementing a new tilegrid subclass with regular polygons always call this at the very beginning 
+   *     of the generate() function. It sets up the correct ngon generator.
+   ***/
+  protected NGonGenerator setupRegularNgonGenerator(int cellSides){
+   
     if (renderMode == JAVA2D)
       ngonGenerator = new Java2DNgonGenerator(cellSides, cellRadius, textureImage);
     else
-      ngonGenerator = new P2DNgonGenerator(cellSides, cellRadius, textureImage, texCoords);   
-
+      ngonGenerator = new P2DNgonGenerator(cellSides, cellRadius, textureImage, texCoords);  
+   
     cellSize = new PVector(ngonGenerator.cellWidth(), ngonGenerator.cellHeight());
+    
+    return ngonGenerator;
+  }
+  
+   /***
+   *     when implementing a new tilegrid subclass with irregular polygons always call this at the very beginning 
+   *     of the generate() function. It sets up the correct polygon generator.
+   ***/
+  protected P2DIrregularPolygonGenerator setupIrregularNgonGenerator(){
+   
+    P2DIrregularPolygonGenerator generator = new P2DIrregularPolygonGenerator(textureImage, texCoords);
+    
+    if (renderMode == P2D)
+      ngonGenerator = generator;
+    else
+      println("you can only have irregular polygons while in the P2D render mode");
+      
+      return generator; 
 
+  }
+
+  /***
+   *     when implementing a new tilegrid subclass always call right after setting up 
+   *     your polygon generator. It sets up and returns the correct drawing context.
+   ***/
+  protected PGraphics initGeneration(boolean i_outlines) {
     if (i_outlines) {
-      gridContext = createGraphics((int)renderSize.x, (int)renderSize.y, renderMode);
+      gridContext = createGraphics((int)renderSize.x, (int)renderSize.y);
       gridContext.beginDraw();
       gridContext.background(0, 0);
       return gridContext;
@@ -292,6 +320,7 @@ class TileGrid {
       previewImage = renderContext.get();
       previewImage.resize(renderContext.width >= renderContext.height ? (int)previewSize.x : 0, renderContext.height > renderContext.width ? (int)previewSize.y : 0);
     }
+    
   }
 
   /***

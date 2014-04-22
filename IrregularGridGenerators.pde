@@ -76,6 +76,17 @@ class VoronoiDelaunayGrid extends TileGrid {
     }
   }
   
+  public void clearPoints(){
+    voronoi = new Voronoi();
+  }
+  
+  public void addNormalizedPoints(PVector renderSize, ArrayList<PVector> i_normalized){
+    
+    for(PVector pt : i_normalized){
+     addPoint(new PVector(renderSize.x * pt.x, renderSize.y * pt.y)); 
+    }
+    
+  }
   
   public void generate(boolean i_outlines) {
  

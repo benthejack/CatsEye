@@ -48,8 +48,7 @@ class PatternTriangle {
 
 
 
-  void draw(PGraphics renderContext) {
-
+  void draw(PGraphics renderContext){
     renderContext.image(canvas, 0, 0);
   }
 
@@ -57,20 +56,20 @@ class PatternTriangle {
 
   void drawOutline(PGraphics renderContext) {
     renderContext.stroke(255, 0, 0);
-    renderContext.strokeWeight(2);
+    renderContext.strokeWeight(1);
     renderContext.line(pt1.x, pt1.y, pt2.x, pt2.y);
     renderContext.line(pt2.x, pt2.y, pt3.x, pt3.y);
     renderContext.line(pt3.x, pt3.y, pt1.x, pt1.y);
     
-    renderContext.stroke(255);
-    renderContext.strokeWeight(2);
+    renderContext.stroke(0, 0, 255);
+    renderContext.strokeWeight(1);
     renderContext.line(pt2.x, pt2.y, pt3.x, pt3.y);
   }
   
   
 
   PImage getImage() {
-    return canvas;
+    return canvas.get();
   }
 }
 

@@ -18,15 +18,19 @@
   
   //--------------------GLOBAL VARIABLES-------------------
   
-  public final int HEXAGONGRID = 1;
-  public final int TRIANGLEGRID = 2;
-  public final int SQUAREGRID = 3;
-  public final int VORONOIGRID = 4;
-  public final int DELAUNAYGRID = 5;
+  public final String[] gridTypes = {"HEX", "TRI", "SQUARE", "VORONOI", "DELAUNAY"}; 
+  public final int HEXAGONGRID = 0;
+  public final int TRIANGLEGRID = 1;
+  public final int SQUAREGRID = 2;
+  public final int VORONOIGRID = 3;
+  public final int DELAUNAYGRID = 4;
+  public int currentGridType;
   
+  Frame ImageWindowFrame, vdGUIFrame;
   
   private ControlP5 cp5;
   private ImageSelectionWindow imageWindow;
+  private VoronoiDelaunayGUIWindow voronoiDelaunayWindow;
   
   RadioButton gridTypeButton;
   Textfield printWidthField, printHeightField;
@@ -61,6 +65,8 @@
     globalControlGroup();
   
     imageWindow = addImageWindow("patternImage", 600, 600);
+    voronoiDelaunayWindow = addVdGUIWindow("voronoi controls", 600, 600);
+    toggleWindows(HEXAGONGRID);
     
     backgroundImage = createCheckerBackground();
   }
@@ -86,7 +92,9 @@
     fill(180, 200);
     noStroke();
     rect(0,490, 160, height-490);
-    image(gridGenerator.getUnitImage(), 20, 500);
+    
+    PImage previewImage = gridGenerator.getUnitImage();
+    image(previewImage, 20, 500);
 
   }
   
@@ -136,17 +144,29 @@
   
   
   /* 
-  *   trigger image save. Images are saved in nested folders ordered by date and time
+  *   image save. Images are saved in nested folders ordered by date and time
   */
   
-  public void saveImage(int guiJunk) { 
-    
-    String[] months = {
+  String[] months = {
       "january", "febuary", "march", "april", "may", "june", "july", "august", "september", "october", "november", "december"
-    };
-    String path = "images/"+year()+"/"+months[month()-1]+"/"+day()+"/"+hour()+"_"+minute()+"_"+second();
-    gridGenerator.saveImage(path);
+  };
+  
+  public void saveImage(int guiJunk) { 
+    String path = "images/"+year()+"/"+months[month()-1]+"/"+day()+"/images/"+hour()+"_"+minute()+"_"+second()+"--"+gridTypes[currentGridType];
+    gridGenerator.saveImage(path, ".png", drawGrid);
   }  
+  
+  
+  /* 
+  *   tile save. Images are saved in nested folders ordered by date and time
+  */
+  
+  public void saveTile() { 
+    
+    String path = "images/"+year()+"/"+months[month()-1]+"/"+day()+"/tiles/"+hour()+"_"+minute()+"_"+second()+"--"+gridTypes[currentGridType];
+    gridGenerator.saveTile(path+".png");
+
+  } 
   
   
   
@@ -156,6 +176,8 @@
   
   public void changeGridType(int i_type) {
   
+    toggleWindows(i_type);
+    
     switch(i_type) {
     case HEXAGONGRID:
       gridGenerator = new HexGrid(gridGenerator);
@@ -173,25 +195,25 @@
       irregularGridGenerator = new VoronoiDelaunayGrid(gridGenerator);
       gridGenerator = irregularGridGenerator;
       irregularGridGenerator.setType(irregularGridGenerator.VORONOI);
-      irregularGridGenerator.addRandomPoints((int)cellRadius, width, height);
+      voronoiDelaunayWindow.setGridType(VORONOIGRID);
       imageWindow.showTriSelectButton();
-
       break;
 
     case DELAUNAYGRID:
       irregularGridGenerator = new VoronoiDelaunayGrid(gridGenerator);
       gridGenerator = irregularGridGenerator;
       irregularGridGenerator.setType(irregularGridGenerator.DELAUNAY);
-      irregularGridGenerator.addRandomPoints((int)cellRadius, width, height);
+      voronoiDelaunayWindow.setGridType(DELAUNAYGRID);
       imageWindow.showTriSelectButton();
-
-
       break;
   
     default:
       gridGenerator = new HexGrid(gridGenerator);
       break;
     }
+   
+    currentGridType = i_type;
+    
   }
   
   
@@ -202,9 +224,19 @@
   */
   
   public void update(){
+    
     if(triggerGeneration){
+      
+       if(currentGridType == VORONOIGRID || currentGridType == DELAUNAYGRID){
+         irregularGridGenerator.clearPoints();
+         irregularGridGenerator.addNormalizedPoints(gridGenerator.getRenderSize(), voronoiDelaunayWindow.getNormalizedPoints());
+       }
+       
        generatePattern(); 
     }
+    
+   
+   
   }
   
   
@@ -228,15 +260,33 @@
   */
 
   private ImageSelectionWindow addImageWindow(String theName, int theWidth, int theHeight) {
-    Frame f = new Frame(theName);
+    ImageWindowFrame = new Frame(theName);
     ImageSelectionWindow p = new ImageSelectionWindow(this, theWidth, theHeight);
-    f.add(p);
+    ImageWindowFrame.add(p);
     p.init();
-    f.setTitle(theName);
-    f.setSize(p.width, p.height);
-    f.setLocation(0, 0);
-    f.setResizable(false);
-    f.setVisible(true);
+    ImageWindowFrame.setTitle(theName);
+    ImageWindowFrame.setSize(p.width, p.height);
+    ImageWindowFrame.setLocation(0, 0);
+    ImageWindowFrame.setResizable(false);
+    ImageWindowFrame.setVisible(true);
+    return p;
+  }
+  
+  
+  /*
+  *   creates voronoi/delaunay grid interface window
+  */
+
+  private VoronoiDelaunayGUIWindow addVdGUIWindow(String theName, int theWidth, int theHeight) {
+    vdGUIFrame = new Frame(theName);
+    VoronoiDelaunayGUIWindow p = new VoronoiDelaunayGUIWindow(this, irregularGridGenerator, theWidth, theHeight);
+    vdGUIFrame.add(p);
+    p.init();
+    vdGUIFrame.setTitle(theName);
+    vdGUIFrame.setSize(theWidth, theHeight);
+    vdGUIFrame.setLocation(0, 650);
+    vdGUIFrame.setResizable(false);
+    vdGUIFrame.setVisible(true);
     return p;
   }
   
@@ -334,6 +384,28 @@
   }
   
   
+  private void toggleWindows(int i_type){
+   
+   switch(i_type){
+    case HEXAGONGRID:
+    case TRIANGLEGRID:
+    case SQUAREGRID:
+        vdGUIFrame.setVisible(false);
+    break;
+    
+    case VORONOIGRID:
+    case DELAUNAYGRID:
+        vdGUIFrame.setVisible(true);
+    break;
+    
+    default:
+    break;
+    
+   } 
+    
+  }
+  
+  
   
   //------------------------------------------ACTUAL GUI CREATION------------------------------------------
   
@@ -406,6 +478,18 @@
       .setPosition(90, 180)
         .setSize(50, 20)
           .setGroup(globalControls);
+          
+          
+    cp5.addButton("save Tile")
+      .setPosition(20, 600)
+        .setSize(50, 20)
+        .plugTo(this,"saveTile");
+
+        
+    cp5.addButton("save Image")
+      .setPosition(90, 600)
+        .setSize(50, 20)
+          .plugTo(this,"saveImage");
   }
   
   
@@ -439,6 +523,7 @@
   }
   
   void keyPressed(){
+    
    if(key == 'r'){
      
      if(getRenderMode() == P2D){
@@ -449,6 +534,7 @@
       imageWindow.showTriSelectButton();
      }
      
-   }  
+   }
+   
   }
 

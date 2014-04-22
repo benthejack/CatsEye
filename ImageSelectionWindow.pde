@@ -107,10 +107,18 @@ public class ImageSelectionWindow extends PApplet {
   
   public PImage getCropSection(){
    
-    if(!useTriSelect)
-      return textureImage.get((int)(textureClipRectTL.x/scaleFactor), (int)(textureClipRectTL.y/scaleFactor), (int)((textureClipRectBR.x - textureClipRectTL.x)/scaleFactor), (int)((textureClipRectBR.y - textureClipRectTL.y)/scaleFactor));
-    else
-      return textureImage;
+    if(textureImage != null){
+      if(!useTriSelect)
+        return textureImage.get((int)(textureClipRectTL.x/scaleFactor), (int)(textureClipRectTL.y/scaleFactor), (int)((textureClipRectBR.x - textureClipRectTL.x)/scaleFactor), (int)((textureClipRectBR.y - textureClipRectTL.y)/scaleFactor));
+      else
+        return textureImage;
+    }else{
+     PGraphics out = createGraphics(1,1);
+     out.beginDraw();
+     out.background(0, 0);
+     out.endDraw();
+     return out.get(); 
+    }
       
   }
   

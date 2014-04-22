@@ -164,8 +164,8 @@ class P2DNgonGenerator extends NGonGenerator {
 
     PShape outer = createShape();
     outer.beginShape();
-    outer.stroke(255);
-    outer.strokeWeight(2);
+    outer.stroke(0, 0, 255);
+    outer.strokeWeight(1);
     outer.noFill();
     createPolygon(outer, i_texCoords);
     outer.endShape();
@@ -173,7 +173,7 @@ class P2DNgonGenerator extends NGonGenerator {
     PShape inner = createShape();
     inner.beginShape(TRIANGLE_FAN);
     inner.stroke(255, 0, 0);
-    inner.strokeWeight(2);
+    inner.strokeWeight(1);
     inner.noFill();
     inner.vertex(0, 0, i_texCoords[0].x, i_texCoords[0].y);
     createPolygon(inner, i_texCoords);

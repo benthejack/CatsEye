@@ -5,7 +5,7 @@ void setup(){
   
   size(1000,1000, P2D);
   gridGenerator = new HexGrid();
-  
+  irregularGridGenerator = new VoronoiDelaunayGrid();
   
 
   setupTileExplorerGUI();

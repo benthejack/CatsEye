@@ -125,16 +125,42 @@ class TileGrid {
   }
 
   public void saveImage(String i_path) {
-    saveImage(i_path, ".png");
+    saveImage(i_path, ".png", false);
   }
 
-  public void saveImage(String i_path, String i_fileSuffix) {
+  public void saveImage(String i_path, String i_fileSuffix, boolean i_saveWithGrid) {
 
     if (!generated) {
       generate();
     }
 
-    renderContext.save(i_path+i_fileSuffix);
+    PGraphics gfx = createGraphics((int)renderSize.x, (int)renderSize.y);   
+    gfx.beginDraw();
+    gfx.noSmooth();
+    gfx.background(255,0);
+    gfx.image(renderContext,0,0);
+    
+    if(i_saveWithGrid){
+      regenerateGrid();
+      gfx.image(gridContext,0,0);
+    }
+      
+    gfx.save(i_path+(i_saveWithGrid ? "_GRID" : "")+i_fileSuffix);
+  }
+  
+  
+  public void saveTile(String i_path) {
+    PImage tempTile = getUnitImage();
+
+    //this is a hack for a bug that won't save images in JAVA2D mode if PImage.save() is used
+    PGraphics tile = createGraphics(tempTile.width, tempTile.height);
+    tile.beginDraw();
+    tile.background(0,0);
+    tile.image(tempTile, 0, 0);
+    tile.endDraw();
+    //---------------------------------------------------------------------------------------
+    
+    tile.save(i_path + ".png");
   }
 
   public void useMask(boolean i_useMask) {
@@ -165,12 +191,16 @@ class TileGrid {
   public PImage getGridImage() {
 
     if (!gridGenerated) {
-      generate(true);
-      gridPreviewImage = gridContext.get();
-      gridPreviewImage.resize(gridContext.width >= gridContext.height ? (int)previewSize.x : 0, gridContext.height > gridContext.width ? (int)previewSize.y : 0);
+      regenerateGrid();
     } 
 
     return gridPreviewImage;
+  }
+  
+  public void regenerateGrid(){
+    generate(true);
+    gridPreviewImage = gridContext.get();
+    gridPreviewImage.resize(gridContext.width >= gridContext.height ? (int)previewSize.x : 0, gridContext.height > gridContext.width ? (int)previewSize.y : 0);
   }
 
   public PImage getUnitImage() {
@@ -273,10 +303,9 @@ class TileGrid {
   protected P2DIrregularPolygonGenerator setupIrregularNgonGenerator(){
    
     P2DIrregularPolygonGenerator generator = new P2DIrregularPolygonGenerator(textureImage, texCoords);
-    
-    if (renderMode == P2D)
-      ngonGenerator = generator;
-    else
+    ngonGenerator = generator;
+
+    if (renderMode != P2D)
       println("you can only have irregular polygons while in the P2D render mode");
       
       return generator; 

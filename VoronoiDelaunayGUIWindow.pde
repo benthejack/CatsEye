@@ -41,18 +41,19 @@ public class VoronoiDelaunayGUIWindow extends PApplet {
 
 
   public void clearPoints() {
+    
     points.clear();
+    calculateVoronoi();
   }
   
   
 
   public void addRandomPoints() {
-
-    println("random");
-
     for (int i = 0; i < randomCount; ++i) {
       points.add(new PVector(random(this.width), random(this.height)));
     }
+    
+    calculateVoronoi();
   }
   
   
@@ -81,6 +82,7 @@ public class VoronoiDelaunayGUIWindow extends PApplet {
     
   public void mousePressed() {
     points.add(new PVector(mouseX, mouseY));
+    calculateVoronoi();
   }
 
 
@@ -88,7 +90,6 @@ public class VoronoiDelaunayGUIWindow extends PApplet {
 
     background(255);
 
-    calculateVoronoi();
     
      noFill();
      stroke(0);

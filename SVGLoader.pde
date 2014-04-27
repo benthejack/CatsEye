@@ -73,6 +73,7 @@ class SVGTile {
     this.maskedVector = createGraphics( (int)(this.mySVG.width*scale), (int)(this.mySVG.height*scale), JAVA2D);
     this.maskedVector.beginDraw();
     this.maskedVector.smooth();
+    
     for (int i = 0; i<=this.childrenNum-1; i++) {
 
       this.maskedVector.stroke(ttp[i]);
@@ -86,7 +87,9 @@ class SVGTile {
 
       this.children[i].scale(scale);
       this.maskedVector.shape(this.children[i], 0, 0);
+      
     }
+    
     maskedVector.endDraw();
 
     this.display = this.maskedVector.get();

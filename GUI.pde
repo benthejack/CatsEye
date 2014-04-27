@@ -234,8 +234,6 @@
        
        generatePattern(); 
     }
-    
-   
    
   }
   
